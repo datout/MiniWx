@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "dev.miniwx"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.miniwx"
         minSdk = 28
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 3
         versionName = "0.3.0"
     }

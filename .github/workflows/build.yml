@@ -24,8 +24,8 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android 37 platform
-        run: sdkmanager "platforms;android-37"
+      - name: Install Android 36 platform
+        run: sdkmanager "platforms;android-36"
 
       - name: Build debug APK
         run: |
