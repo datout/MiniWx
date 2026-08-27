@@ -18,6 +18,7 @@ import dev.miniwx.hooks.VoiceAutoTranscribeHook;
 import dev.miniwx.hooks.NotificationEnhanceHook;
 import dev.miniwx.hooks.GroupRoleHook;
 import dev.miniwx.wechat.MessageViewApi;
+import dev.miniwx.wechat.WeChatDatabaseApi;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -40,6 +41,7 @@ public final class XposedEntry implements IXposedHookLoadPackage {
         HookManager manager = new HookManager(Arrays.asList(
                 new HostLifecycleHook(),
                 new MessageViewApi(),
+                new WeChatDatabaseApi(),
                 new MessageSnapshotHook(),
                 new AntiRecallHook(),
                 new MessageEnhancementsHook(),

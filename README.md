@@ -2,14 +2,14 @@
 
 MiniWx is a small self-use WeChat enhancement module built around LSPosed/Xposed. Native/Zygisk remains an optional future backend rather than a hard dependency.
 
-## 0.7.0
+## 0.7.1
 
 Implemented and connected to WeChat hooks:
 
 - LSPosed/Xposed entry for `com.tencent.mm` and main-process-only loading
 - Runtime heartbeat, detected WeChat version, and per-hook compatibility/status card
 - Anti-recall + optional recall notice
-- Own-recall allowance now prefers captured original-message `isSend` metadata and only falls back to recall text when no snapshot exists
+- Own-recall allowance now **first queries WeChat's persisted local `message` table by `msgSvrId` and reads `isSend`**; process snapshots and recall text are only fallbacks
 - Precise message time (`yyyy/MM/dd HH:mm:ss`)
 - Incoming sender wxid display + long-press copy
 - Group-chat sender wxid + owner/administrator badges
@@ -60,28 +60,28 @@ GitHub Actions also uploads `MiniWx-<version>-apk` under **Artifacts**.
 
 ## GitHub Release
 
-A successful normal push to `main` creates or updates the release matching `versionName`. For `0.7.0`, the workflow creates/updates `v0.7.0` and attaches:
+A successful normal push to `main` creates or updates the release matching `versionName`. For `0.7.1`, the workflow creates/updates `v0.7.1` and attaches:
 
 ```text
-MiniWx-0.7.0.apk
-MiniWx-0.7.0.apk.sha256
+MiniWx-0.7.1.apk
+MiniWx-0.7.1.apk.sha256
 ```
 
 Normal release flow:
 
 ```bash
 git add .
-git commit -m "MiniWx 0.7.0"
+git commit -m "MiniWx 0.7.1"
 git push
 ```
 
 No separate tag command is required.
 
-## Test checklist for 0.7
+## Test checklist for 0.7.1
 
 1. Enable MiniWx in LSPosed for WeChat, force-stop WeChat, then reopen it.
 2. Open MiniWx and verify the runtime heartbeat plus Hook compatibility card.
-3. Test anti-recall once with another account and once with your own outgoing message.
+3. Test persistent anti-recall: send/receive messages, force-stop and reopen WeChat, then recall those pre-restart messages from the other device/account. Verify incoming recall is blocked while your own recall remains normal.
 4. Enable `语音相关增强` + `收藏语音转发`, then test both a favorite picker from chat and `我 -> 收藏 -> 转发`.
 5. Enable `保存原始语音`, open a chat containing a voice message, and tap `保存语音` on its time row.
 6. Enable notification enhancement and verify merged MessagingStyle notifications are cleared after reading.

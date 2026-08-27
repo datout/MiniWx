@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1
+
+- Add persistent anti-recall lookup through WeChat's already-open local WCDB database.
+- Resolve MMKernel/CoreStorage with DexKit and reuse the host process database handle without opening/decrypting the database separately.
+- Query the original `message` row by `msgSvrId` and use persisted `isSend` as the primary own-recall decision source.
+- Keep the 0.7 in-process message snapshot cache as a fallback when WCDB is not ready or the row is missing.
+- Keep replacement-text detection only as the final compatibility fallback.
+- Add `WeChatDatabase` to the Hook compatibility/status card.
+
 ## 0.7.0
 
 - Fix Java static listener method references in voice transcription and group-role hooks so GitHub Actions can compile the project.

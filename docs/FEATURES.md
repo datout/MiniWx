@@ -1,6 +1,6 @@
 # Feature status
 
-## Active in 0.7.0
+## Active in 0.7.1
 
 | Feature | Status | Notes |
 | --- | --- | --- |
@@ -10,7 +10,8 @@
 | Detected WeChat version | Active | Reported from the host package. |
 | Anti-recall | Experimental | DexKit resolves the XML parser and suppresses local `revokemsg` handling. |
 | Recall notice | Experimental | Shows the original recall replacement text as a local Toast after blocking. |
-| Own recall normal | Experimental | Uses captured original-message `isSend` metadata first; replacement text is a fallback. |
+| Persistent message DB lookup | Experimental | Resolves WeChat CoreStorage/WCDB and queries the persisted `message` row by `msgSvrId`. |
+| Own recall normal | Experimental | Uses persisted database `isSend` first, then the in-process snapshot cache, then replacement text. |
 | Detailed message time | Experimental | Uses the Mvvm chat row bind hook and `timeTV`. |
 | Copy wxid | Experimental | Incoming sender wxid is shown on the time line; long-press it to copy. |
 | Group sender ID | Experimental | Incoming group rows append the sender wxid beside the displayed member name. |
@@ -31,7 +32,6 @@
 - True per-sender notification avatars for group notifications
 - Chat toolbar
 - Swipe-to-quote / optional repeat/edit actions
-- A persistent DB-backed fallback for own-recall detection across process restarts
 - Optional native / Zygisk-only features only when a feature genuinely needs them
 
 ## Design note

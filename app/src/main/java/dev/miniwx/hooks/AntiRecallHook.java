@@ -15,6 +15,7 @@ import dev.miniwx.core.HookItem;
 import dev.miniwx.core.HookLog;
 import dev.miniwx.core.HookResolveExecutor;
 import dev.miniwx.wechat.MessageSnapshotCache;
+import dev.miniwx.wechat.WeChatDatabaseApi;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -26,8 +27,8 @@ import org.luckypray.dexkit.result.MethodData;
 /**
  * Anti-recall implementation based on the parsed sysmsg/revokemsg map.
  * It does not modify network traffic. 0.4 adds user settings and an optional
- * local notice. Self-recall detection first uses original message metadata captured from
- * WeChat storage/UI hooks, then falls back to the replacement text when no snapshot exists.
+ * local notice. Self-recall detection first queries WeChat's persisted local message row by
+ * msgSvrId, then falls back to the in-process snapshot cache and finally replacement text.
  */
 public final class AntiRecallHook implements HookItem {
     private static final String TYPE_KEY = ".sysmsg.$type";
@@ -109,14 +110,25 @@ public final class AntiRecallHook implements HookItem {
         String replaceMessage = String.valueOf(result.get(REPLACE_KEY));
         boolean ownRecall = false;
         boolean senderKnown = false;
+        String senderSource = "text-fallback";
         Object idValue = result.get(REVOKE_ID_KEY);
         if (idValue != null) {
             try {
                 long serverId = Long.parseLong(String.valueOf(idValue).trim());
-                MessageSnapshotCache.Snapshot snapshot = MessageSnapshotCache.get(serverId);
-                if (snapshot != null) {
+
+                // Prefer the persisted WeChat message table so the decision survives process restarts.
+                WeChatDatabaseApi.MessageRecord persisted = WeChatDatabaseApi.findMessageByServerId(serverId);
+                if (persisted != null) {
                     senderKnown = true;
-                    ownRecall = snapshot.selfSender();
+                    ownRecall = persisted.selfSender();
+                    senderSource = "database";
+                } else {
+                    MessageSnapshotCache.Snapshot snapshot = MessageSnapshotCache.get(serverId);
+                    if (snapshot != null) {
+                        senderKnown = true;
+                        ownRecall = snapshot.selfSender();
+                        senderSource = "message-cache";
+                    }
                 }
             } catch (Throwable ignored) {
             }
@@ -128,7 +140,7 @@ public final class AntiRecallHook implements HookItem {
         }
 
         if (ownRecall && ModuleConfigClient.getBoolean(context, FeatureFlags.OWN_RECALL_NORMAL)) {
-            HookLog.i("AntiRecall allowed self revoke, source=" + (senderKnown ? "message-cache" : "text-fallback"));
+            HookLog.i("AntiRecall allowed self revoke, source=" + senderSource);
             return;
         }
 

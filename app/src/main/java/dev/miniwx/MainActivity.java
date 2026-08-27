@@ -63,7 +63,7 @@ public final class MainActivity extends Activity {
         addSectionTitle(root, "防撤回");
         addSwitch(root, "防撤回", "保留对方撤回的原消息（实验性）", FeatureFlags.ANTI_RECALL, true);
         addSwitch(root, "撤回消息提示", "拦截后显示微信原始的撤回提示文字", FeatureFlags.RECALL_NOTICE, true);
-        addSwitch(root, "自己撤回正常", "优先根据原消息 isSend 判断；缓存未命中时再回退撤回提示文本", FeatureFlags.OWN_RECALL_NORMAL, true);
+        addSwitch(root, "自己撤回正常", "优先查询微信本地 message 数据库的 isSend；数据库未就绪/未命中时才回退缓存和提示文本", FeatureFlags.OWN_RECALL_NORMAL, true);
 
         addGap(root, 18);
         addSectionTitle(root, "聊天与消息");
@@ -97,7 +97,7 @@ public final class MainActivity extends Activity {
 
         addGap(root, 22);
         TextView note = text(
-                "说明：0.7.0 新增收藏语音转发、原始语音保存、原消息缓存辅助防撤回判断、通知头像沿用、多选数量限制兼容 Hook，以及 Hook 状态诊断。收藏语音转发当前重点支持‘我 → 收藏 → 转发’路径；语音保存导出的是微信原始编码文件，不做 MP3 转码。聊天工具栏和滑动引用没有用占位开关冒充完成，后续再接。",
+                "说明：0.7.1 防撤回已接入微信本地 message 数据库：根据撤回事件的 msgSvrId 直接读取原消息 isSend，微信重启后仍可判断自己/对方消息；数据库不可用时才退回进程缓存和提示文本。其余 0.7 功能保持不变。",
                 13,
                 false
         );
@@ -161,7 +161,7 @@ public final class MainActivity extends Activity {
 
         card.addView(text("Hook 兼容状态", 16, true));
         String[] hooks = {
-                "MessageViewApi", "MessageSnapshot", "AntiRecall",
+                "MessageViewApi", "WeChatDatabase", "MessageSnapshot", "AntiRecall",
                 "VoiceAutoTranscribe", "VoiceSave", "FavoriteVoiceForward",
                 "GroupRole", "ImageEnhance", "MessageSelectionLimit"
         };
