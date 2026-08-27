@@ -56,7 +56,7 @@ public final class VoiceAutoTranscribeHook implements HookItem {
 
     @Override
     public void install(HookContext context) {
-        MessageViewApi.addListener(this::onMessageBind);
+        MessageViewApi.addListener(VoiceAutoTranscribeHook::onMessageBind);
 
         XposedHelpers.findAndHookMethod(
                 Application.class,

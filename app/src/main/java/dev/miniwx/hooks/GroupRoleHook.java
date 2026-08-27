@@ -66,7 +66,7 @@ public final class GroupRoleHook implements HookItem {
 
     @Override
     public void install(HookContext context) {
-        MessageViewApi.addListener(this::onMessageBind);
+        MessageViewApi.addListener(GroupRoleHook::onMessageBind);
         XposedHelpers.findAndHookMethod(
                 Application.class,
                 "attach",

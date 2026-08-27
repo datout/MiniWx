@@ -2,6 +2,8 @@
 
 ## 0.7.0
 
+- Fix Java static listener method references in voice transcription and group-role hooks so GitHub Actions can compile the project.
+
 - Add favorite voice forwarding for the chat favorite picker and `我 -> 收藏 -> 转发` path.
 - Add a minimal protobuf reader for WeChat favorite voice metadata and reuse WeChat's own voice send/storage flow.
 - Add original voice export to `Download/MiniWx` on Android 10+; no MP3 conversion yet.
