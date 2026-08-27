@@ -1,6 +1,6 @@
 # Feature status
 
-## Active in 0.5.0
+## Active in 0.6.0
 
 | Feature | Status | Notes |
 | --- | --- | --- |
@@ -12,16 +12,22 @@
 | Own recall normal | Experimental | Conservative text matching; DB-backed sender detection is still planned. |
 | Detailed message time | Experimental | Uses the Mvvm chat row bind hook and `timeTV` to show `yyyy/MM/dd HH:mm:ss`. |
 | Copy wxid | Experimental | Incoming sender wxid is shown on the time line; long-press it to copy. |
-| Group-chat enhancement | Experimental | Incoming group rows append the sender wxid next to the displayed member name. |
+| Group sender ID | Experimental | Incoming group rows append the sender wxid beside the displayed member name. |
+| Group role badges | Experimental | Uses chatroom data to distinguish owner/admin/member; regular-member badge is optional. |
 | Image enhancement | Experimental | Gallery hook auto-clicks visible “查看原图 / 查看原视频” controls. |
+| Auto voice-to-text | Experimental | Calls WeChat's own TransformComponent for incoming type-34 voice messages and clears the local unplayed marker through VoiceLogic. |
+| MessagingStyle notifications | Experimental | Rebuilds eligible WeChat message notifications with Android MessagingStyle. |
+| Notification merge | Experimental | Uses a stable ID per conversation and translates WeChat's original cancel ID. |
+| GitHub Release CI | Active | A successful push to `main` creates/updates `v<version>` and publishes the APK + SHA-256 under Releases. |
 
-## Next batch
+## Planned
 
-These are visible but disabled until their real WeChat hooks are connected:
-
-- Voice enhancements (auto speech-to-text / playback / save will be split into sub-features)
-- Notification enhancements (MessagingStyle / grouping / cleanup)
+- Voice save/export (requires a stable current-WeChat media path/storage resolver)
+- Notification sender avatars
+- DB-backed own-recall detection
+- More group-chat tools and message actions
+- Optional native / Zygisk-only features when a feature genuinely needs them
 
 ## Design note
 
-The message-row features share one DexKit-resolved `MessageViewApi`, so adding more row-level enhancements does not require resolving the same WeChat method repeatedly.
+The message-row features share one DexKit-resolved `MessageViewApi`, so row-level enhancements do not resolve the same WeChat method repeatedly. New feature hooks stay isolated: one failed resolver should not stop the rest of MiniWx from loading.

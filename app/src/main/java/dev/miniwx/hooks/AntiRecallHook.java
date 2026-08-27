@@ -13,6 +13,7 @@ import dev.miniwx.config.ModuleConfigClient;
 import dev.miniwx.core.HookContext;
 import dev.miniwx.core.HookItem;
 import dev.miniwx.core.HookLog;
+import dev.miniwx.core.HookResolveExecutor;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -48,11 +49,8 @@ public final class AntiRecallHook implements HookItem {
                     protected void afterHookedMethod(MethodHookParam param) {
                         hostContext = (Context) param.args[0];
                         if (!RESOLVE_STARTED.compareAndSet(false, true)) return;
-                        try {
-                            installXmlParserHook(hostContext, context);
-                        } catch (Throwable t) {
-                            HookLog.e("AntiRecall resolver failed", t);
-                        }
+                        Context host = hostContext;
+                        HookResolveExecutor.submit("AntiRecall", () -> installXmlParserHook(host, context));
                     }
                 }
         );

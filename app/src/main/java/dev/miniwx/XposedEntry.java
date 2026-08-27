@@ -10,6 +10,9 @@ import dev.miniwx.hooks.AntiRecallHook;
 import dev.miniwx.hooks.HostLifecycleHook;
 import dev.miniwx.hooks.ImageEnhanceHook;
 import dev.miniwx.hooks.MessageEnhancementsHook;
+import dev.miniwx.hooks.VoiceAutoTranscribeHook;
+import dev.miniwx.hooks.NotificationEnhanceHook;
+import dev.miniwx.hooks.GroupRoleHook;
 import dev.miniwx.wechat.MessageViewApi;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -35,6 +38,9 @@ public final class XposedEntry implements IXposedHookLoadPackage {
                 new MessageViewApi(),
                 new AntiRecallHook(),
                 new MessageEnhancementsHook(),
+                new VoiceAutoTranscribeHook(),
+                new GroupRoleHook(),
+                new NotificationEnhanceHook(),
                 new ImageEnhanceHook()
         ));
         manager.installAll(context);

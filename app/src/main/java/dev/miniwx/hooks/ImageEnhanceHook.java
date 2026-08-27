@@ -17,6 +17,7 @@ import dev.miniwx.config.ModuleConfigClient;
 import dev.miniwx.core.HookContext;
 import dev.miniwx.core.HookItem;
 import dev.miniwx.core.HookLog;
+import dev.miniwx.core.HookResolveExecutor;
 import dev.miniwx.wechat.ReflectionUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -46,11 +47,8 @@ public final class ImageEnhanceHook implements HookItem {
                     protected void afterHookedMethod(MethodHookParam param) {
                         hostContext = (Context) param.args[0];
                         if (!RESOLVE_STARTED.compareAndSet(false, true)) return;
-                        try {
-                            resolveGalleryHooks(hostContext, context);
-                        } catch (Throwable t) {
-                            HookLog.e("ImageEnhance resolver failed", t);
-                        }
+                        Context host = hostContext;
+                        HookResolveExecutor.submit("ImageEnhance", () -> resolveGalleryHooks(host, context));
                     }
                 }
         );

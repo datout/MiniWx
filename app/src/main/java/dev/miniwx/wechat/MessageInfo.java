@@ -17,6 +17,9 @@ public final class MessageInfo {
     public int isSend() { return intValue("field_isSend"); }
     public String talker() { return stringValue("field_talker"); }
     public String content() { return stringValue("field_content"); }
+    public String transContent() { return stringValue("field_transContent"); }
+
+    public boolean isVoice() { return typeCode() == 34; }
 
     public boolean isSelfSender() {
         return isSend() != 0;
@@ -58,6 +61,6 @@ public final class MessageInfo {
     }
 
     private static String emptyToNull(String value) {
-        return value == null || value.isBlank() ? null : value;
+        return value == null || value.trim().isEmpty() ? null : value;
     }
 }

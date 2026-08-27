@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import dev.miniwx.core.HookContext;
 import dev.miniwx.core.HookItem;
 import dev.miniwx.core.HookLog;
+import dev.miniwx.core.HookResolveExecutor;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -28,7 +29,7 @@ import org.luckypray.dexkit.result.MethodData;
  */
 public final class MessageViewApi implements HookItem {
     public interface Listener {
-        void onBind(View view, MessageInfo message) throws Throwable;
+        void onBind(View view, MessageInfo message, Object chattingItem) throws Throwable;
     }
 
     private static final List<Listener> LISTENERS = new CopyOnWriteArrayList<>();
@@ -56,11 +57,7 @@ public final class MessageViewApi implements HookItem {
                     protected void afterHookedMethod(MethodHookParam param) {
                         Context host = (Context) param.args[0];
                         if (!RESOLVE_STARTED.compareAndSet(false, true)) return;
-                        try {
-                            resolveAndHook(host, context);
-                        } catch (Throwable t) {
-                            HookLog.e("MessageViewApi resolver failed", t);
-                        }
+                        HookResolveExecutor.submit("MessageViewApi", () -> resolveAndHook(host, context));
                     }
                 }
         );
@@ -101,7 +98,7 @@ public final class MessageViewApi implements HookItem {
                     MessageInfo message = new MessageInfo(messageObject);
                     for (Listener listener : LISTENERS) {
                         try {
-                            listener.onBind(root, message);
+                            listener.onBind(root, message, param.thisObject);
                         } catch (Throwable t) {
                             HookLog.e("message listener failed: " + listener.getClass().getName(), t);
                         }

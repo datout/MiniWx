@@ -49,7 +49,7 @@ public final class MainActivity extends Activity {
 
         TextView title = text("MiniWx", 30, true);
         root.addView(title);
-        TextView subtitle = text("0.5.0 · LSPosed 主框架 / Native + Zygisk 可选扩展", 14, false);
+        TextView subtitle = text(moduleVersion() + " · LSPosed 主框架 / Native + Zygisk 可选扩展", 14, false);
         subtitle.setAlpha(0.65f);
         root.addView(subtitle);
 
@@ -70,17 +70,25 @@ public final class MainActivity extends Activity {
 
         addGap(root, 18);
         addSectionTitle(root, "媒体增强");
-        addSwitch(root, "语音相关增强", "功能入口已纳入；将拆分为播放/转文字/保存等子功能", FeatureFlags.VOICE_ENHANCE, false);
-        addSwitch(root, "图片增强", "第一阶段：打开图片/视频时自动点击‘查看原图/原视频’", FeatureFlags.IMAGE_ENHANCE, true);
+        addSwitch(root, "语音相关增强", "启用语音增强总开关", FeatureFlags.VOICE_ENHANCE, true);
+        addSwitch(root, "自动语音转文字", "收到语音后调用微信自身 TransformComponent 自动发起转文字", FeatureFlags.VOICE_AUTO_TRANSCRIBE, true);
+        addSwitch(root, "图片增强", "打开图片/视频时自动点击‘查看原图/原视频’", FeatureFlags.IMAGE_ENHANCE, true);
 
         addGap(root, 18);
-        addSectionTitle(root, "系统与群聊");
-        addSwitch(root, "通知增强", "功能入口已纳入；具体通知 Hook 待适配", FeatureFlags.NOTIFICATION_ENHANCE, false);
-        addSwitch(root, "群聊增强", "第一阶段：群消息昵称旁显示发送者 wxid", FeatureFlags.GROUP_ENHANCE, true);
+        addSectionTitle(root, "通知增强");
+        addSwitch(root, "通知增强", "启用 MiniWx 通知处理总开关", FeatureFlags.NOTIFICATION_ENHANCE, true);
+        addSwitch(root, "MessagingStyle", "把微信消息通知整理成 Android 对话式通知", FeatureFlags.NOTIFICATION_MESSAGING_STYLE, true);
+        addSwitch(root, "同会话合并", "同一联系人/群聊复用稳定通知 ID，并兼容微信 cancel", FeatureFlags.NOTIFICATION_MERGE, true);
+
+        addGap(root, 18);
+        addSectionTitle(root, "群聊增强");
+        addSwitch(root, "群聊增强", "群消息昵称旁显示发送者 wxid，并提供身份标签能力", FeatureFlags.GROUP_ENHANCE, true);
+        addSwitch(root, "群主/管理员标签", "读取微信群资料显示群主、管理员身份", FeatureFlags.GROUP_ROLE_BADGE, true);
+        addSwitch(root, "显示普通成员标签", "同时给普通群成员显示‘成员’标签；默认关闭以减少界面占用", FeatureFlags.GROUP_SHOW_MEMBER, true);
 
         addGap(root, 22);
         TextView note = text(
-                "说明：0.5.0 已接入防撤回、精确时间、wxid 复制、自动原图和群聊发送者 ID。语音与通知增强仍保持禁用，下一批再接真实 Hook。所有功能均为本地增强，不修改微信网络协议。",
+                "说明：0.6.0 已接入防撤回、精确时间、wxid 复制、自动原图、自动语音转文字、MessagingStyle 通知合并、群主/管理员身份标签。所有功能都可以单独关闭；功能 Hook 失败时会记录日志并隔离，不影响其他 Hook。",
                 13,
                 false
         );
@@ -130,6 +138,15 @@ public final class MainActivity extends Activity {
         root.addView(card, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    private String moduleVersion() {
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+            return info.versionName != null ? info.versionName : "unknown";
+        } catch (Throwable t) {
+            return "unknown";
+        }
     }
 
     private String installedWeChatVersion() {

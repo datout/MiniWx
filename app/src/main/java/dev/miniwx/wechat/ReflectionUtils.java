@@ -33,6 +33,38 @@ public final class ReflectionUtils {
         }
     }
 
+    public static Object firstFieldValueRaw(Object target, Class<?> wantedType) {
+        if (target == null || wantedType == null) return null;
+        for (Class<?> c = target.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            for (Field field : c.getDeclaredFields()) {
+                if (!wantedType.isAssignableFrom(field.getType())) continue;
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(target);
+                    if (value != null && wantedType.isInstance(value)) return value;
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Integer firstIntFieldValue(Object target) {
+        if (target == null) return null;
+        for (Class<?> c = target.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            for (Field field : c.getDeclaredFields()) {
+                if (field.getType() != int.class && field.getType() != Integer.class) continue;
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(target);
+                    if (value instanceof Number) return ((Number) value).intValue();
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        return null;
+    }
+
     public static <T> T firstFieldValue(Object target, Class<T> wantedType) {
         if (target == null) return null;
         for (Class<?> c = target.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {

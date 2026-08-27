@@ -4,7 +4,9 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Bundle;
+import android.os.Process;
 
 /**
  * Tiny read-mostly bridge between the MiniWx app and hooks running inside WeChat.
@@ -31,7 +33,7 @@ public final class SettingsProvider extends ContentProvider {
 
     @Override
     public Bundle call(String method, String arg, Bundle extras) {
-        if (getContext() == null) {
+        if (getContext() == null || !isAllowedCaller()) {
             return Bundle.EMPTY;
         }
 
@@ -63,6 +65,22 @@ public final class SettingsProvider extends ContentProvider {
         }
 
         return super.call(method, arg, extras);
+    }
+
+    private boolean isAllowedCaller() {
+        if (getContext() == null) return false;
+        int uid = Binder.getCallingUid();
+        if (uid == Process.myUid()) return true;
+        try {
+            String[] packages = getContext().getPackageManager().getPackagesForUid(uid);
+            if (packages != null) {
+                for (String pkg : packages) {
+                    if ("com.tencent.mm".equals(pkg)) return true;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
     }
 
     @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) { return null; }

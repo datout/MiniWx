@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -20,7 +19,7 @@ import dev.miniwx.core.HookItem;
 import dev.miniwx.core.HookLog;
 import dev.miniwx.wechat.MessageInfo;
 import dev.miniwx.wechat.MessageViewApi;
-import dev.miniwx.wechat.ReflectionUtils;
+import dev.miniwx.wechat.MessageViewUi;
 
 /** Message-time, wxid-copy and first group-chat UI enhancements. */
 public final class MessageEnhancementsHook implements HookItem {
@@ -31,7 +30,7 @@ public final class MessageEnhancementsHook implements HookItem {
 
     @Override
     public void install(HookContext context) {
-        MessageViewApi.addListener((view, message) -> apply(view, message));
+        MessageViewApi.addListener((view, message, chattingItem) -> apply(view, message));
     }
 
     private static void apply(View root, MessageInfo message) {
@@ -44,7 +43,7 @@ public final class MessageEnhancementsHook implements HookItem {
         if (!showTime && !copyWxid && !groupEnhance) return;
 
         String sender = message.senderWxId();
-        TextView timeView = findTextField(root.getTag(), "timeTV");
+        TextView timeView = MessageViewUi.findTextField(root.getTag(), "timeTV");
 
         if (timeView != null && (showTime || copyWxid)) {
             timeView.setVisibility(View.VISIBLE);
@@ -72,7 +71,7 @@ public final class MessageEnhancementsHook implements HookItem {
         }
 
         if (groupEnhance && message.isGroupChat() && !message.isSelfSender() && sender != null) {
-            TextView userView = findTextField(root.getTag(), "userTV");
+            TextView userView = MessageViewUi.findTextField(root.getTag(), "userTV");
             if (userView != null) {
                 String current = String.valueOf(userView.getText());
                 // WeChat resets userTV on every bind. This guard only prevents duplicate suffixes
@@ -81,20 +80,16 @@ public final class MessageEnhancementsHook implements HookItem {
                     userView.setText(current + GROUP_SUFFIX_PREFIX + sender);
                 }
                 userView.setTypeface(userView.getTypeface(), Typeface.NORMAL);
+                if (copyWxid) {
+                    String copyValue = sender;
+                    userView.setOnLongClickListener(v -> {
+                        copyToClipboard(v.getContext(), copyValue);
+                        Toast.makeText(v.getContext(), "已复制 wxid：" + copyValue, Toast.LENGTH_SHORT).show();
+                        return true;
+                    });
+                    userView.setLongClickable(true);
+                }
             }
-        }
-    }
-
-    private static TextView findTextField(Object tag, String name) {
-        if (tag == null) return null;
-        try {
-            Field field = ReflectionUtils.findField(tag.getClass(), name);
-            if (field == null) return null;
-            Object value = field.get(tag);
-            return value instanceof TextView ? (TextView) value : null;
-        } catch (Throwable t) {
-            HookLog.e("failed to resolve " + name, t);
-            return null;
         }
     }
 
