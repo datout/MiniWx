@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0
+
+- Add favorite voice forwarding for the chat favorite picker and `我 -> 收藏 -> 转发` path.
+- Add a minimal protobuf reader for WeChat favorite voice metadata and reuse WeChat's own voice send/storage flow.
+- Add original voice export to `Download/MiniWx` on Android 10+; no MP3 conversion yet.
+- Improve own-recall detection using captured original-message `isSend` metadata before falling back to replacement text.
+- Capture message metadata from both message-row binding and MsgInfoStorage insert paths.
+- Add a Hook compatibility/status card to the MiniWx settings app.
+- Reuse WeChat's original notification large icon in MessagingStyle sender entries when available.
+- Add an experimental compatibility hook for the classic 100-message multi-select limit.
+- Keep chat toolbar and swipe-to-quote out of the UI until their version-sensitive hook chain is actually connected.
+
 ## 0.6.0
 
 - Publish/update the matching GitHub Release automatically after successful `main` builds.

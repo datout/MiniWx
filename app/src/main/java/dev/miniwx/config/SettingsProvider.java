@@ -20,11 +20,14 @@ public final class SettingsProvider extends ContentProvider {
     public static final String METHOD_GET_BOOL = "get_bool";
     public static final String METHOD_REPORT_RUNTIME = "report_runtime";
     public static final String METHOD_GET_RUNTIME = "get_runtime";
+    public static final String METHOD_REPORT_HOOK = "report_hook";
+    public static final String METHOD_GET_HOOK = "get_hook";
 
     private static final String RUNTIME_PREFS = "runtime";
     private static final String KEY_LAST_SEEN = "last_seen";
     private static final String KEY_WECHAT_VERSION = "wechat_version";
     private static final String KEY_PROCESS = "process";
+    private static final String HOOK_PREFS = "hook_status";
 
     @Override
     public boolean onCreate() {
@@ -61,6 +64,28 @@ public final class SettingsProvider extends ContentProvider {
             out.putLong(KEY_LAST_SEEN, prefs.getLong(KEY_LAST_SEEN, 0L));
             out.putString(KEY_WECHAT_VERSION, prefs.getString(KEY_WECHAT_VERSION, "未检测"));
             out.putString(KEY_PROCESS, prefs.getString(KEY_PROCESS, "未检测"));
+            return out;
+        }
+
+        if (METHOD_REPORT_HOOK.equals(method)) {
+            if (arg == null || arg.trim().isEmpty()) return Bundle.EMPTY;
+            String status = extras != null ? extras.getString("status", "unknown") : "unknown";
+            String detail = extras != null ? extras.getString("detail", "") : "";
+            getContext().getSharedPreferences(HOOK_PREFS, 0).edit()
+                    .putString(arg + ".status", status)
+                    .putString(arg + ".detail", detail)
+                    .putLong(arg + ".time", System.currentTimeMillis())
+                    .apply();
+            return Bundle.EMPTY;
+        }
+
+        if (METHOD_GET_HOOK.equals(method)) {
+            if (arg == null || arg.trim().isEmpty()) return Bundle.EMPTY;
+            var prefs = getContext().getSharedPreferences(HOOK_PREFS, 0);
+            Bundle out = new Bundle();
+            out.putString("status", prefs.getString(arg + ".status", "未检测"));
+            out.putString("detail", prefs.getString(arg + ".detail", ""));
+            out.putLong("time", prefs.getLong(arg + ".time", 0L));
             return out;
         }
 

@@ -51,6 +51,23 @@ public final class ModuleConfigClient {
         }
     }
 
+    public static void reportHookStatus(Context hostContext, String hook, String status, String detail) {
+        if (hostContext == null || hook == null) return;
+        try {
+            Bundle extras = new Bundle();
+            extras.putString("status", status);
+            extras.putString("detail", detail == null ? "" : detail);
+            hostContext.getContentResolver().call(
+                    SettingsProvider.URI,
+                    SettingsProvider.METHOD_REPORT_HOOK,
+                    hook,
+                    extras
+            );
+        } catch (Throwable t) {
+            HookLog.e("hook status report failed for " + hook, t);
+        }
+    }
+
     private static final class CachedBoolean {
         final boolean value;
         final long readAt;

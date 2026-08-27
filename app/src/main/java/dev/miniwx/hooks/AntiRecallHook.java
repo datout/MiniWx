@@ -14,6 +14,7 @@ import dev.miniwx.core.HookContext;
 import dev.miniwx.core.HookItem;
 import dev.miniwx.core.HookLog;
 import dev.miniwx.core.HookResolveExecutor;
+import dev.miniwx.wechat.MessageSnapshotCache;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -25,12 +26,13 @@ import org.luckypray.dexkit.result.MethodData;
 /**
  * Anti-recall implementation based on the parsed sysmsg/revokemsg map.
  * It does not modify network traffic. 0.4 adds user settings and an optional
- * local notice. Self-recall detection is intentionally conservative and uses
- * WeChat's replacement text until a database-backed sender check is added.
+ * local notice. Self-recall detection first uses original message metadata captured from
+ * WeChat storage/UI hooks, then falls back to the replacement text when no snapshot exists.
  */
 public final class AntiRecallHook implements HookItem {
     private static final String TYPE_KEY = ".sysmsg.$type";
     private static final String REPLACE_KEY = ".sysmsg.revokemsg.replacemsg";
+    private static final String REVOKE_ID_KEY = ".sysmsg.revokemsg.newmsgid";
     private static final AtomicBoolean RESOLVE_STARTED = new AtomicBoolean(false);
     private static final AtomicBoolean PARSER_HOOKED = new AtomicBoolean(false);
     private static volatile Context hostContext;
@@ -105,13 +107,28 @@ public final class AntiRecallHook implements HookItem {
         if (!"revokemsg".equals(result.get(TYPE_KEY))) return;
 
         String replaceMessage = String.valueOf(result.get(REPLACE_KEY));
-        boolean looksLikeOwnRecall = replaceMessage.startsWith("你撤回")
-                || replaceMessage.startsWith("You recalled")
-                || replaceMessage.contains("You recalled a message");
+        boolean ownRecall = false;
+        boolean senderKnown = false;
+        Object idValue = result.get(REVOKE_ID_KEY);
+        if (idValue != null) {
+            try {
+                long serverId = Long.parseLong(String.valueOf(idValue).trim());
+                MessageSnapshotCache.Snapshot snapshot = MessageSnapshotCache.get(serverId);
+                if (snapshot != null) {
+                    senderKnown = true;
+                    ownRecall = snapshot.selfSender();
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        if (!senderKnown) {
+            ownRecall = replaceMessage.startsWith("你撤回")
+                    || replaceMessage.startsWith("You recalled")
+                    || replaceMessage.contains("You recalled a message");
+        }
 
-        if (looksLikeOwnRecall
-                && ModuleConfigClient.getBoolean(context, FeatureFlags.OWN_RECALL_NORMAL)) {
-            HookLog.i("AntiRecall allowed probable self revoke");
+        if (ownRecall && ModuleConfigClient.getBoolean(context, FeatureFlags.OWN_RECALL_NORMAL)) {
+            HookLog.i("AntiRecall allowed self revoke, source=" + (senderKnown ? "message-cache" : "text-fallback"));
             return;
         }
 

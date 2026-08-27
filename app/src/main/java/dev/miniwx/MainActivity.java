@@ -56,12 +56,14 @@ public final class MainActivity extends Activity {
         addGap(root, 18);
         addSectionTitle(root, "运行状态");
         addStatusCard(root);
+        addGap(root, 12);
+        addHookStatusCard(root);
 
         addGap(root, 18);
         addSectionTitle(root, "防撤回");
         addSwitch(root, "防撤回", "保留对方撤回的原消息（实验性）", FeatureFlags.ANTI_RECALL, true);
         addSwitch(root, "撤回消息提示", "拦截后显示微信原始的撤回提示文字", FeatureFlags.RECALL_NOTICE, true);
-        addSwitch(root, "自己撤回正常", "识别为‘你撤回…’时不拦截；当前为文本兼容逻辑", FeatureFlags.OWN_RECALL_NORMAL, true);
+        addSwitch(root, "自己撤回正常", "优先根据原消息 isSend 判断；缓存未命中时再回退撤回提示文本", FeatureFlags.OWN_RECALL_NORMAL, true);
 
         addGap(root, 18);
         addSectionTitle(root, "聊天与消息");
@@ -72,6 +74,8 @@ public final class MainActivity extends Activity {
         addSectionTitle(root, "媒体增强");
         addSwitch(root, "语音相关增强", "启用语音增强总开关", FeatureFlags.VOICE_ENHANCE, true);
         addSwitch(root, "自动语音转文字", "收到语音后调用微信自身 TransformComponent 自动发起转文字", FeatureFlags.VOICE_AUTO_TRANSCRIBE, true);
+        addSwitch(root, "收藏语音转发", "允许从‘我 → 收藏’选择单条语音并转发给好友/群聊", FeatureFlags.VOICE_FAVORITE_FORWARD, true);
+        addSwitch(root, "保存原始语音", "语音消息时间行出现‘保存语音’，点击保存到 Download/MiniWx（原始编码，不转 MP3）", FeatureFlags.VOICE_SAVE_ORIGINAL, true);
         addSwitch(root, "图片增强", "打开图片/视频时自动点击‘查看原图/原视频’", FeatureFlags.IMAGE_ENHANCE, true);
 
         addGap(root, 18);
@@ -79,6 +83,7 @@ public final class MainActivity extends Activity {
         addSwitch(root, "通知增强", "启用 MiniWx 通知处理总开关", FeatureFlags.NOTIFICATION_ENHANCE, true);
         addSwitch(root, "MessagingStyle", "把微信消息通知整理成 Android 对话式通知", FeatureFlags.NOTIFICATION_MESSAGING_STYLE, true);
         addSwitch(root, "同会话合并", "同一联系人/群聊复用稳定通知 ID，并兼容微信 cancel", FeatureFlags.NOTIFICATION_MERGE, true);
+        addSwitch(root, "通知头像", "MessagingStyle 消息沿用微信原通知的大图标/头像（群成员独立头像后续继续完善）", FeatureFlags.NOTIFICATION_AVATAR, true);
 
         addGap(root, 18);
         addSectionTitle(root, "群聊增强");
@@ -86,9 +91,13 @@ public final class MainActivity extends Activity {
         addSwitch(root, "群主/管理员标签", "读取微信群资料显示群主、管理员身份", FeatureFlags.GROUP_ROLE_BADGE, true);
         addSwitch(root, "显示普通成员标签", "同时给普通群成员显示‘成员’标签；默认关闭以减少界面占用", FeatureFlags.GROUP_SHOW_MEMBER, true);
 
+        addGap(root, 18);
+        addSectionTitle(root, "操作增强");
+        addSwitch(root, "解除消息多选 100 条限制", "兼容旧版 ChattingDataAdapterV3；若当前微信已更换实现，Hook 状态会显示失败而不会强行注入", FeatureFlags.MESSAGE_SELECTION_UNLIMITED, true);
+
         addGap(root, 22);
         TextView note = text(
-                "说明：0.6.0 已接入防撤回、精确时间、wxid 复制、自动原图、自动语音转文字、MessagingStyle 通知合并、群主/管理员身份标签。所有功能都可以单独关闭；功能 Hook 失败时会记录日志并隔离，不影响其他 Hook。",
+                "说明：0.7.0 新增收藏语音转发、原始语音保存、原消息缓存辅助防撤回判断、通知头像沿用、多选数量限制兼容 Hook，以及 Hook 状态诊断。收藏语音转发当前重点支持‘我 → 收藏 → 转发’路径；语音保存导出的是微信原始编码文件，不做 MP3 转码。聊天工具栏和滑动引用没有用占位开关冒充完成，后续再接。",
                 13,
                 false
         );
@@ -138,6 +147,47 @@ public final class MainActivity extends Activity {
         root.addView(card, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    private void addHookStatusCard(LinearLayout root) {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(16), dp(14), dp(16), dp(14));
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(0xFFF8F8F8);
+        background.setCornerRadius(dp(14));
+        background.setStroke(dp(1), 0x22000000);
+        card.setBackground(background);
+
+        card.addView(text("Hook 兼容状态", 16, true));
+        String[] hooks = {
+                "MessageViewApi", "MessageSnapshot", "AntiRecall",
+                "VoiceAutoTranscribe", "VoiceSave", "FavoriteVoiceForward",
+                "GroupRole", "ImageEnhance", "MessageSelectionLimit"
+        };
+        for (String hook : hooks) {
+            Bundle status = null;
+            try {
+                status = getContentResolver().call(
+                        SettingsProvider.URI, SettingsProvider.METHOD_GET_HOOK, hook, null);
+            } catch (Throwable ignored) {
+            }
+            String value = status != null ? status.getString("status", "未检测") : "未检测";
+            String detail = status != null ? status.getString("detail", "") : "";
+            TextView line = text(hook + "：" + value, 13, false);
+            card.addView(line);
+            if (detail != null && !detail.trim().isEmpty() && !"正常".equals(value)) {
+                TextView d = text("  " + detail, 11, false);
+                d.setAlpha(0.58f);
+                card.addView(d);
+            }
+        }
+        TextView hint = text("状态在微信进程完成 DexKit 定位后更新；微信升级后可先看这里判断是哪一项失效。", 12, false);
+        hint.setAlpha(0.65f);
+        hint.setPadding(0, dp(8), 0, 0);
+        card.addView(hint);
+        root.addView(card, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     private String moduleVersion() {

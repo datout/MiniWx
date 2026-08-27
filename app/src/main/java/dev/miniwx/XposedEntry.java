@@ -8,6 +8,10 @@ import dev.miniwx.core.HookManager;
 import dev.miniwx.core.ProcessPolicy;
 import dev.miniwx.hooks.AntiRecallHook;
 import dev.miniwx.hooks.HostLifecycleHook;
+import dev.miniwx.hooks.MessageSelectionLimitHook;
+import dev.miniwx.hooks.FavoriteVoiceForwardHook;
+import dev.miniwx.hooks.VoiceSaveHook;
+import dev.miniwx.hooks.MessageSnapshotHook;
 import dev.miniwx.hooks.ImageEnhanceHook;
 import dev.miniwx.hooks.MessageEnhancementsHook;
 import dev.miniwx.hooks.VoiceAutoTranscribeHook;
@@ -36,12 +40,16 @@ public final class XposedEntry implements IXposedHookLoadPackage {
         HookManager manager = new HookManager(Arrays.asList(
                 new HostLifecycleHook(),
                 new MessageViewApi(),
+                new MessageSnapshotHook(),
                 new AntiRecallHook(),
                 new MessageEnhancementsHook(),
                 new VoiceAutoTranscribeHook(),
+                new VoiceSaveHook(),
+                new FavoriteVoiceForwardHook(),
                 new GroupRoleHook(),
                 new NotificationEnhanceHook(),
-                new ImageEnhanceHook()
+                new ImageEnhanceHook(),
+                new MessageSelectionLimitHook()
         ));
         manager.installAll(context);
     }

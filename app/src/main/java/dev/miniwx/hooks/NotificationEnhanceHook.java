@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Person;
 import android.content.Context;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -124,12 +125,15 @@ public final class NotificationEnhanceHook implements HookItem {
                     style.setGroupConversation(false);
                 }
 
+                Icon notificationIcon = ModuleConfigClient.getBoolean(context, FeatureFlags.NOTIFICATION_AVATAR)
+                        ? notification.getLargeIcon() : null;
                 Deque<Entry> entries = HISTORY.get(parsed.conversation);
                 if (entries != null) {
                     synchronized (entries) {
                         for (Entry entry : entries) {
-                            Person sender = new Person.Builder().setName(entry.sender).build();
-                            style.addMessage(entry.text, entry.when, sender);
+                            Person.Builder senderBuilder = new Person.Builder().setName(entry.sender);
+                            if (notificationIcon != null) senderBuilder.setIcon(notificationIcon);
+                            style.addMessage(entry.text, entry.when, senderBuilder.build());
                         }
                     }
                 }

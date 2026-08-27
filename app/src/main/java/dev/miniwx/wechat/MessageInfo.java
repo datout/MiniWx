@@ -18,6 +18,7 @@ public final class MessageInfo {
     public String talker() { return stringValue("field_talker"); }
     public String content() { return stringValue("field_content"); }
     public String transContent() { return stringValue("field_transContent"); }
+    public String imagePath() { return stringValue("field_imgPath"); }
 
     public boolean isVoice() { return typeCode() == 34; }
 

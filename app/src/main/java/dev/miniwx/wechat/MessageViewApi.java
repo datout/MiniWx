@@ -96,6 +96,7 @@ public final class MessageViewApi implements HookItem {
                     Object messageObject = resolveMessageObject(param.thisObject, index);
                     if (!ReflectionUtils.looksLikeMessageObject(messageObject)) return;
                     MessageInfo message = new MessageInfo(messageObject);
+                    MessageSnapshotCache.put(message);
                     for (Listener listener : LISTENERS) {
                         try {
                             listener.onBind(root, message, param.thisObject);
