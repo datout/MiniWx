@@ -1,6 +1,6 @@
 # Feature status
 
-## Active in 0.4.0
+## Active in 0.5.0
 
 | Feature | Status | Notes |
 | --- | --- | --- |
@@ -9,17 +9,19 @@
 | Detected WeChat version | Active | Reported from the host package. |
 | Anti-recall | Experimental | DexKit resolves the XML parser and suppresses local `revokemsg` handling. |
 | Recall notice | Experimental | Shows the original recall replacement text as a local Toast after blocking. |
-| Own recall normal | Experimental | Uses conservative replacement-text matching in 0.4; database-backed detection is planned. |
+| Own recall normal | Experimental | Conservative text matching; DB-backed sender detection is still planned. |
+| Detailed message time | Experimental | Uses the Mvvm chat row bind hook and `timeTV` to show `yyyy/MM/dd HH:mm:ss`. |
+| Copy wxid | Experimental | Incoming sender wxid is shown on the time line; long-press it to copy. |
+| Group-chat enhancement | Experimental | Incoming group rows append the sender wxid next to the displayed member name. |
+| Image enhancement | Experimental | Gallery hook auto-clicks visible “查看原图 / 查看原视频” controls. |
 
-## Registered, not yet hooked
+## Next batch
 
-The following settings are intentionally visible but disabled until their real, version-specific hooks are ported:
+These are visible but disabled until their real WeChat hooks are connected:
 
-- Copy wxid
-- Detailed message time
-- Voice enhancements
-- Image enhancements
-- Notification enhancements
-- Group-chat enhancements
+- Voice enhancements (auto speech-to-text / playback / save will be split into sub-features)
+- Notification enhancements (MessagingStyle / grouping / cleanup)
 
-This avoids presenting a switch as working when it has no effect.
+## Design note
+
+The message-row features share one DexKit-resolved `MessageViewApi`, so adding more row-level enhancements does not require resolving the same WeChat method repeatedly.

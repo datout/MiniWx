@@ -9,6 +9,7 @@ MiniWx app / settings
         +-- LSPosed Java core (default)
         |     +-- HookManager
         |     +-- DexKit resolver
+        |     +-- MessageViewApi (shared row bind service)
         |     +-- feature hooks
         |
         +-- NativeBackend facade
@@ -24,7 +25,7 @@ Each `HookItem` declares the capabilities it needs through
 
 Current capabilities:
 
-- `JAVA_HOOK` - available in 0.4;
+- `JAVA_HOOK` - available in 0.5;
 - `NATIVE_HOOK` - reserved;
 - `ZYGISK` - reserved;
 - `SUB_PROCESS` - reserved for features that intentionally run outside the main
@@ -35,7 +36,7 @@ instead of allowing it to break the rest of MiniWx.
 
 ## Process policy
 
-MiniWx 0.4 still loads only `com.tencent.mm`'s main process. The decision is now
+MiniWx 0.5 still loads only `com.tencent.mm`'s main process. The decision is now
 centralized in `ProcessPolicy`, so a future feature can add a narrowly scoped
 subprocess requirement without rewriting the Xposed entry or enabling all
 WeChat processes globally.

@@ -1,11 +1,14 @@
 MiniWx
 
-This project contains an independently simplified implementation inspired by
-WeKit's open-source XML-parser / anti-message-recall approach.
+This GPL-3.0 project contains independently simplified implementations inspired by
+public WeChat enhancement projects, especially their DexKit method-location and
+local UI-hook approaches:
 
 WeKit: https://github.com/Ujhhgtg/WeKit
-WeKit license: GNU General Public License v3.0
+WCXLC: https://github.com/Kimjaejiang/WCXLC
 DexKit: https://github.com/LuckyPray/DexKit
+
+WeKit and WCXLC are distributed under GNU GPL v3.0. MiniWx remains GPL-3.0.
 
 MiniWx does not include Xposed/Root/Zygisk concealment, platform risk-control
 bypass, network request forgery, bots, bulk actions, or automatic messaging.

@@ -40,13 +40,13 @@ jobs:
 
       - name: Write build summary
         run: |
-          echo "### MiniWx 0.4.0 build" >> "$GITHUB_STEP_SUMMARY"
+          echo "### MiniWx 0.5.0 build" >> "$GITHUB_STEP_SUMMARY"
           echo "APK generated successfully: `app/build/outputs/apk/debug/app-debug.apk`" >> "$GITHUB_STEP_SUMMARY"
-          echo "Download the artifact named **MiniWx-0.4.0-debug-apk** below this run." >> "$GITHUB_STEP_SUMMARY"
+          echo "Download the artifact named **MiniWx-0.5.0-debug-apk** below this run." >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload MiniWx 0.4.0 APK
+      - name: Upload MiniWx 0.5.0 APK
         uses: actions/upload-artifact@v4
         with:
-          name: MiniWx-0.4.0-debug-apk
+          name: MiniWx-0.5.0-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
