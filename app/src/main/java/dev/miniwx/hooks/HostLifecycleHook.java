@@ -3,16 +3,14 @@ package dev.miniwx.hooks;
 import android.app.Application;
 import android.content.Context;
 
+import dev.miniwx.config.ModuleConfigClient;
 import dev.miniwx.core.HookContext;
 import dev.miniwx.core.HookItem;
 import dev.miniwx.core.HookLog;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 
-/**
- * Harmless bootstrap hook used only to prove that MiniWx was loaded in the
- * WeChat main process and to capture the host Context for later local/UI hooks.
- */
+/** Captures the WeChat context and reports a small runtime heartbeat to MiniWx. */
 public final class HostLifecycleHook implements HookItem {
     private static volatile Context hostContext;
 
@@ -49,6 +47,11 @@ public final class HostLifecycleHook implements HookItem {
                         }
                         HookLog.i("WeChat attached, version=" + version
                                 + ", process=" + context.loadPackageParam.processName);
+                        ModuleConfigClient.reportRuntime(
+                                hostContext,
+                                version,
+                                context.loadPackageParam.processName
+                        );
                     }
                 }
         );

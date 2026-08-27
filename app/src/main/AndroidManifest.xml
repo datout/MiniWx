@@ -11,6 +11,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <provider
+            android:name=".config.SettingsProvider"
+            android:authorities="dev.miniwx.settings"
+            android:exported="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
