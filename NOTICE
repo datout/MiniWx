@@ -1,0 +1,11 @@
+MiniWx
+
+This project contains an independently simplified implementation inspired by
+WeKit's open-source XML-parser / anti-message-recall approach.
+
+WeKit: https://github.com/Ujhhgtg/WeKit
+WeKit license: GNU General Public License v3.0
+DexKit: https://github.com/LuckyPray/DexKit
+
+MiniWx does not include Xposed/Root/Zygisk concealment, platform risk-control
+bypass, network request forgery, bots, bulk actions, or automatic messaging.
